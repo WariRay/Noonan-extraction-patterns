@@ -47,23 +47,40 @@ def get_args() -> dict:
         choices=["1", "2", "3", "4"],
         help="Choose which pipeline to run.",
     )
-    parser.add_argument("--run-all", action="store_true", help="Run all 4 pipelines.")
     args = parser.parse_args()
     args_dict: dict[str, str] = {
         "pipeline": args.pipeline,
-        "run_all": args.run_all,
     }
     return args_dict
+
+
+import shutil
+import os
+
+
+def reset_directory(path_dir: str):
+    if os.path.exists(path_dir):
+        try:
+            shutil.rmtree(path_dir)
+            print(f"Removed directory and its contents: {path_dir}")
+        except Exception as e:
+            print(f"Error removing directory: {e}")
+    else:
+        print(f"Directory does not exist: {path_dir}")
+        print("Skipping.")
+
+    try:
+        os.makedirs(path_dir)
+        print(f"Recreated directory: {path_dir}")
+    except Exception as e:
+        print(f"Error creating directory: {e}")
 
 
 def preprocess(url):
     noonan_gene_reviews = HTMLProcessor(url=url, path=None)
     partitions = noonan_gene_reviews.split_html("h2", avoid_tags=["h2", "h3", "h4"])
     print(f"Preprocessing step complete! {len(partitions)} partitions generated.")
-
-    small_test = partitions[:10]
-    return small_test
-    # return partitions
+    return partitions
 
 
 from annotate import annotate_text
@@ -476,7 +493,9 @@ def pipeline_one():
     final_pairs, _, _ = process_concept_validation(frequency_validation_tuples)
     serialise_concept_pairs(final_pairs, PHENOTYPE_FREQUENCY_WITH_FASTHPOCR_RESULTS)
 
-    print("PIPELINE 1 - Phenotype-frequency extraction with FastHPOCR completed successfully!")
+    print(
+        "PIPELINE 1 - Phenotype-frequency extraction with FastHPOCR completed successfully!"
+    )
     print(
         f"Pipeline outputs has been saved in the directory: '{PHENOTYPE_FREQUENCY_WITH_FASTHPOCR_OUTPUTS_DIR}'"
     )
@@ -574,7 +593,9 @@ def pipeline_two():
     final_pairs, _, _ = process_concept_validation(frequency_validation_tuples)
     serialise_concept_pairs(final_pairs, PHENOTYPE_FREQUENCY_WITHOUT_FASTHPOCR_RESULTS)
 
-    print("PIPELINE 2 - Phenotype-frequency extraction without FastHPOCR completed successfully!")
+    print(
+        "PIPELINE 2 - Phenotype-frequency extraction without FastHPOCR completed successfully!"
+    )
     print(
         f"Pipeline outputs has been saved in the directory: '{PHENOTYPE_FREQUENCY_WITHOUT_FASTHPOCR_OUTPUTS_DIR}'"
     )
@@ -657,7 +678,9 @@ def pipeline_three():
     final_pairs, _, _ = process_concept_validation(onset_validation_tuples)
     serialise_concept_pairs(final_pairs, PHENOTYPE_ONSET_WITH_FASTHPOCR_RESULTS)
 
-    print("PIPELINE 3 - Phenotype-onset extraction with FastHPOCR completed successfully!")
+    print(
+        "PIPELINE 3 - Phenotype-onset extraction with FastHPOCR completed successfully!"
+    )
     print(
         f"Pipeline outputs has been saved in the directory: '{PHENOTYPE_ONSET_WITH_FASTHPOCR_OUTPUTS_DIR}'"
     )
@@ -750,46 +773,19 @@ def pipeline_four():
     final_pairs, _, _ = process_concept_validation(onset_validation_tuples)
     serialise_concept_pairs(final_pairs, PHENOTYPE_ONSET_WITHOUT_FASTHPOCR_RESULTS)
 
-    print("PIPELINE 4 - Phenotype-onset extraction without FastHPOCR completed successfully!")
+    print(
+        "PIPELINE 4 - Phenotype-onset extraction without FastHPOCR completed successfully!"
+    )
     print(
         f"Pipeline outputs has been saved in the directory: '{PHENOTYPE_ONSET_WITHOUT_FASTHPOCR_OUTPUTS_DIR}'"
     )
 
 
-import shutil
-import os
-
-
-def reset_directory(path_dir: str):
-    if os.path.exists(path_dir):
-        try:
-            shutil.rmtree(path_dir)
-            print(f"Removed directory and its contents: {path_dir}")
-        except Exception as e:
-            print(f"Error removing directory: {e}")
-    else:
-        print(f"Directory does not exist: {path_dir}")
-        print("Skipping.")
-
-    try:
-        os.makedirs(path_dir)
-        print(f"Recreated directory: {path_dir}")
-    except Exception as e:
-        print(f"Error creating directory: {e}")
-
-
 def main():
     args: dict = get_args()
     pipeline = args.get("pipeline")
-    run_all = args.get("run_all")
 
-    if run_all:
-        print("Running all 4 pipelines...")
-        pipeline_one()
-        pipeline_two()
-        pipeline_three()
-        pipeline_four()
-    elif pipeline == "1":
+    if pipeline == "1":
         pipeline_one()
     elif pipeline == "2":
         pipeline_two()
